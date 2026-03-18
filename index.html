@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strange Attractor Explorer</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #241200;
+    color: #DDC165;
+    font-family: 'Courier New', monospace;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  #three-canvas {
+    display: block;
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+
+  /* ── Controls Panel ── */
+  #controls {
+    position: fixed;
+    top: 16px; left: 16px;
+    background: rgba(26,13,0,0.88);
+    border: 1px solid rgba(221,193,101,0.15);
+    border-radius: 8px;
+    padding: 14px 16px;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+    width: 260px;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.6);
+  }
+
+  #controls::-webkit-scrollbar { width: 4px; }
+  #controls::-webkit-scrollbar-track { background: transparent; }
+  #controls::-webkit-scrollbar-thumb { background: rgba(221,193,101,0.2); border-radius: 2px; }
+
+  #controls h2 {
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #DDC165;
+    margin-bottom: 10px;
+    text-shadow: 0 0 10px rgba(221,193,101,0.3);
+  }
+
+  .section-label {
+    font-size: 0.6rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(221,193,101,0.4);
+    margin: 12px 0 6px 0;
+    border-top: 1px solid rgba(221,193,101,0.08);
+    padding-top: 10px;
+  }
+
+  .param-group {
+    margin-bottom: 8px;
+  }
+
+  .param-group label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: rgba(221,193,101,0.7);
+    margin-bottom: 3px;
+  }
+
+  .param-group label .val {
+    color: #E5591C;
+    font-weight: bold;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 3px;
+    background: rgba(221,193,101,0.12);
+    border-radius: 2px;
+    outline: none;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: #E5591C;
+    cursor: pointer;
+    box-shadow: 0 0 6px rgba(229,89,28,0.5);
+  }
+
+  select {
+    width: 100%;
+    padding: 5px 8px;
+    background: rgba(229,89,28,0.1);
+    border: 1px solid rgba(229,89,28,0.3);
+    color: #DDC165;
+    font-family: 'Courier New', monospace;
+    font-size: 0.7rem;
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+  }
+  select option {
+    background: #1A0D00;
+    color: #DDC165;
+  }
+
+  .preset-row {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+
+  .preset-btn {
+    padding: 3px 8px;
+    font-size: 0.58rem;
+    flex: none;
+  }
+
+  button {
+    padding: 5px 10px;
+    background: rgba(229,89,28,0.12);
+    border: 1px solid rgba(229,89,28,0.35);
+    color: #DDC165;
+    font-family: 'Courier New', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  button:hover {
+    background: rgba(229,89,28,0.25);
+    border-color: #E5591C;
+    box-shadow: 0 0 10px rgba(229,89,28,0.25);
+  }
+  button.active {
+    background: rgba(229,89,28,0.3);
+    border-color: #E5591C;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .btn-row button { flex: 1; }
+
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 5px;
+  }
+  .checkbox-row input[type="checkbox"] { accent-color: #E5591C; }
+  .checkbox-row label {
+    font-size: 0.65rem;
+    color: rgba(221,193,101,0.7);
+    cursor: pointer;
+  }
+
+  /* ── Title Overlay ── */
+  #title-overlay {
+    position: fixed;
+    top: 16px; right: 20px;
+    text-align: right;
+    z-index: 100;
+    pointer-events: none;
+  }
+  #title-overlay h1 {
+    font-size: 1rem;
+    color: #DDC165;
+    text-shadow: 0 0 15px rgba(221,193,101,0.4);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  #title-overlay .subtitle {
+    font-size: 0.6rem;
+    color: rgba(221,193,101,0.35);
+    margin-top: 3px;
+  }
+
+  /* ── Info Bar ── */
+  #info {
+    position: fixed;
+    bottom: 16px; left: 16px;
+    font-size: 0.65rem;
+    color: rgba(221,193,101,0.35);
+    z-index: 100;
+    pointer-events: none;
+  }
+
+  /* ── Keyboard hint ── */
+  #keyhint {
+    position: fixed;
+    bottom: 16px; right: 20px;
+    font-size: 0.55rem;
+    color: rgba(221,193,101,0.2);
+    z-index: 100;
+    pointer-events: none;
+    text-align: right;
+  }
+</style>
+</head>
+<body>
+
+<div id="controls">
+  <h2>Strange Attractors</h2>
+
+  <select id="system-select"></select>
+
+  <div id="presets-container" class="preset-row"></div>
+
+  <div class="section-label">Parameters</div>
+  <div id="params-container"></div>
+
+  <div class="section-label">Display</div>
+
+  <div class="param-group">
+    <label>Speed <span class="val" id="speed-val">1.0</span></label>
+    <input type="range" id="speed" min="0.1" max="5" step="0.1" value="1">
+  </div>
+  <div class="param-group">
+    <label>Trail Length <span class="val" id="trail-val">8000</span></label>
+    <input type="range" id="trail-len" min="500" max="30000" step="500" value="8000">
+  </div>
+  <div class="param-group">
+    <label>Bloom <span class="val" id="bloom-val">1.5</span></label>
+    <input type="range" id="bloom-strength" min="0" max="4" step="0.1" value="1.5">
+  </div>
+
+  <div class="section-label">Color</div>
+  <select id="color-mode">
+    <option value="time">Time Gradient</option>
+    <option value="velocity">Velocity Map</option>
+    <option value="mono">FunForrest Mono</option>
+  </select>
+
+  <div class="section-label">Particles</div>
+  <div class="checkbox-row">
+    <input type="checkbox" id="multi-toggle">
+    <label for="multi-toggle">Multi-particle mode</label>
+  </div>
+  <div class="param-group" id="particle-count-group" style="display:none; margin-top:6px;">
+    <label>Particles <span class="val" id="particle-val">5</span></label>
+    <input type="range" id="particle-count" min="2" max="12" step="1" value="5">
+  </div>
+
+  <div class="section-label">Camera</div>
+  <div class="checkbox-row">
+    <input type="checkbox" id="orbit-toggle" checked>
+    <label for="orbit-toggle">Auto-orbit</label>
+  </div>
+  <div class="checkbox-row">
+    <input type="checkbox" id="morph-toggle" checked>
+    <label for="morph-toggle">Morph on switch</label>
+  </div>
+
+  <div class="btn-row" style="margin-top:12px;">
+    <button id="btn-reset">Reset</button>
+    <button id="btn-screenshot">Save PNG</button>
+  </div>
+</div>
+
+<div id="title-overlay">
+  <h1 id="system-title">Lorenz</h1>
+  <p class="subtitle">Drag to rotate · Scroll to zoom</p>
+</div>
+
+<div id="info">
+  <span id="fps">0 FPS</span> · <span id="points">0 pts</span> · <span id="dt-display">dt 0.005</span>
+</div>
+
+<div id="keyhint">
+  H — hide panel · Space — pause · R — reset · S — screenshot
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.162.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+// ═══════════════════════════════════════════════════════════════
+// ATTRACTOR SYSTEMS
+// ═══════════════════════════════════════════════════════════════
+
+const SYSTEMS = {
+  lorenz: {
+    name: 'Lorenz',
+    params: [
+      { key: 'sigma', name: 'σ (sigma)', value: 10, min: 0, max: 30, step: 0.1 },
+      { key: 'rho', name: 'ρ (rho)', value: 28, min: 0, max: 60, step: 0.1 },
+      { key: 'beta', name: 'β (beta)', value: 2.667, min: 0, max: 10, step: 0.01 },
+    ],
+    fn(x, y, z, p) {
+      return [
+        p.sigma * (y - x),
+        x * (p.rho - z) - y,
+        x * y - p.beta * z,
+      ];
+    },
+    init: () => [1 + Math.random() * 0.1, 1, 1],
+    dt: 0.005,
+    scale: 0.5,
+    center: [0, 0, 23],
+    presets: [
+      { name: 'Classic', values: { sigma: 10, rho: 28, beta: 2.667 } },
+      { name: 'Chaotic', values: { sigma: 14, rho: 46.92, beta: 4 } },
+      { name: 'Gentle', values: { sigma: 6, rho: 18, beta: 1.5 } },
+      { name: 'Tight', values: { sigma: 10, rho: 15, beta: 2.667 } },
+    ],
+  },
+
+  rossler: {
+    name: 'Rössler',
+    params: [
+      { key: 'a', name: 'a', value: 0.2, min: 0, max: 1, step: 0.01 },
+      { key: 'b', name: 'b', value: 0.2, min: 0, max: 2, step: 0.01 },
+      { key: 'c', name: 'c', value: 5.7, min: 1, max: 30, step: 0.1 },
+    ],
+    fn(x, y, z, p) {
+      return [
+        -(y + z),
+        x + p.a * y,
+        p.b + z * (x - p.c),
+      ];
+    },
+    init: () => [1, 1, 0],
+    dt: 0.005,
+    scale: 0.8,
+    center: [0, 0, 8],
+    presets: [
+      { name: 'Classic', values: { a: 0.2, b: 0.2, c: 5.7 } },
+      { name: 'Spiral', values: { a: 0.1, b: 0.1, c: 14 } },
+      { name: 'Funnel', values: { a: 0.2, b: 0.2, c: 18 } },
+    ],
+  },
+
+  chen: {
+    name: 'Chen',
+    params: [
+      { key: 'a', name: 'a', value: 35, min: 20, max: 50, step: 0.5 },
+      { key: 'b', name: 'b', value: 3, min: 0, max: 10, step: 0.1 },
+      { key: 'c', name: 'c', value: 28, min: 10, max: 40, step: 0.5 },
+    ],
+    fn(x, y, z, p) {
+      return [
+        p.a * (y - x),
+        (p.c - p.a) * x - x * z + p.c * y,
+        x * y - p.b * z,
+      ];
+    },
+    init: () => [-10 + Math.random(), 0, 37],
+    dt: 0.002,
+    scale: 0.35,
+    center: [0, 0, 25],
+    presets: [
+      { name: 'Classic', values: { a: 35, b: 3, c: 28 } },
+      { name: 'Wide', values: { a: 40, b: 3, c: 28 } },
+      { name: 'Tight', values: { a: 30, b: 5, c: 20 } },
+    ],
+  },
+
+  aizawa: {
+    name: 'Aizawa',
+    params: [
+      { key: 'a', name: 'a', value: 0.95, min: 0, max: 2, step: 0.01 },
+      { key: 'b', name: 'b', value: 0.7, min: 0, max: 2, step: 0.01 },
+      { key: 'c', name: 'c', value: 0.6, min: 0, max: 2, step: 0.01 },
+      { key: 'd', name: 'd', value: 3.5, min: 0, max: 6, step: 0.1 },
+      { key: 'e', name: 'e', value: 0.25, min: 0, max: 1, step: 0.01 },
+      { key: 'f', name: 'f', value: 0.1, min: 0, max: 1, step: 0.01 },
+    ],
+    fn(x, y, z, p) {
+      const r2 = x * x + y * y;
+      return [
+        (z - p.b) * x - p.d * y,
+        p.d * x + (z - p.b) * y,
+        p.c + p.a * z - (z * z * z) / 3 - r2 * (1 + p.e * z) + p.f * z * x * x * x,
+      ];
+    },
+    init: () => [0.1, 0, 0],
+    dt: 0.005,
+    scale: 5,
+    center: [0, 0, 0.3],
+    presets: [
+      { name: 'Classic', values: { a: 0.95, b: 0.7, c: 0.6, d: 3.5, e: 0.25, f: 0.1 } },
+      { name: 'Torus', values: { a: 0.95, b: 0.7, c: 0.65, d: 3.5, e: 0.25, f: 0.1 } },
+      { name: 'Chaos', values: { a: 0.88, b: 0.5, c: 0.4, d: 4.0, e: 0.3, f: 0.1 } },
+    ],
+  },
+
+  thomas: {
+    name: 'Thomas',
+    params: [
+      { key: 'b', name: 'b (dissipation)', value: 0.208186, min: 0.1, max: 0.4, step: 0.001 },
+    ],
+    fn(x, y, z, p) {
+      return [
+        Math.sin(y) - p.b * x,
+        Math.sin(z) - p.b * y,
+        Math.sin(x) - p.b * z,
+      ];
+    },
+    init: () => [1.1, 1.1, -0.01],
+    dt: 0.03,
+    scale: 3,
+    center: [0, 0, 0],
+    presets: [
+      { name: 'Classic', values: { b: 0.208186 } },
+      { name: 'Tight', values: { b: 0.32 } },
+      { name: 'Diffuse', values: { b: 0.17 } },
+    ],
+  },
+
+  halvorsen: {
+    name: 'Halvorsen',
+    params: [
+      { key: 'a', name: 'a', value: 1.89, min: 1, max: 3, step: 0.01 },
+    ],
+    fn(x, y, z, p) {
+      return [
+        -p.a * x - 4 * y - 4 * z - y * y,
+        -p.a * y - 4 * z - 4 * x - z * z,
+        -p.a * z - 4 * x - 4 * y - x * x,
+      ];
+    },
+    init: () => [-1.48, -1.51, 2.04],
+    dt: 0.005,
+    scale: 0.6,
+    center: [0, 0, 0],
+    presets: [
+      { name: 'Classic', values: { a: 1.89 } },
+      { name: 'Wide', values: { a: 1.4 } },
+      { name: 'Tight', values: { a: 2.2 } },
+    ],
+  },
+
+  dadras: {
+    name: 'Dadras',
+    params: [
+      { key: 'a', name: 'a', value: 3, min: 0, max: 8, step: 0.1 },
+      { key: 'b', name: 'b', value: 2.7, min: 0, max: 6, step: 0.1 },
+      { key: 'c', name: 'c', value: 1.7, min: 0, max: 6, step: 0.1 },
+      { key: 'd', name: 'd', value: 2, min: 0, max: 6, step: 0.1 },
+      { key: 'e', name: 'e', value: 9, min: 0, max: 15, step: 0.1 },
+    ],
+    fn(x, y, z, p) {
+      return [
+        y - p.a * x + p.b * y * z,
+        p.c * y - x * z + z,
+        p.d * x * y - p.e * z,
+      ];
+    },
+    init: () => [1, 1, 0],
+    dt: 0.004,
+    scale: 1.5,
+    center: [0, 0, 0],
+    presets: [
+      { name: 'Classic', values: { a: 3, b: 2.7, c: 1.7, d: 2, e: 9 } },
+      { name: 'Open', values: { a: 2, b: 3, c: 1.7, d: 2, e: 8 } },
+    ],
+  },
+
+  rabinovich: {
+    name: 'Rabinovich–Fabrikant',
+    params: [
+      { key: 'gamma', name: 'γ (gamma)', value: 0.87, min: 0, max: 2, step: 0.01 },
+      { key: 'alpha', name: 'α (alpha)', value: 1.1, min: 0, max: 3, step: 0.01 },
+    ],
+    fn(x, y, z, p) {
+      return [
+        y * (z - 1 + x * x) + p.gamma * x,
+        x * (3 * z + 1 - x * x) + p.gamma * y,
+        -2 * z * (p.alpha + x * y),
+      ];
+    },
+    init: () => [-1, 0, 0.5],
+    dt: 0.002,
+    scale: 4,
+    center: [0, 0, 0.7],
+    presets: [
+      { name: 'Classic', values: { gamma: 0.87, alpha: 1.1 } },
+      { name: 'Slow', values: { gamma: 0.1, alpha: 0.98 } },
+    ],
+  },
+
+  sprottB: {
+    name: 'Sprott B',
+    params: [
+      { key: 'scale_k', name: 'perturbation', value: 1, min: 0.5, max: 2, step: 0.01 },
+    ],
+    fn(x, y, z, p) {
+      return [
+        p.scale_k * y * z,
+        x - y,
+        1 - x * y,
+      ];
+    },
+    init: () => [0.1, 0.5, 0],
+    dt: 0.02,
+    scale: 4,
+    center: [0, 0, 0.5],
+    presets: [
+      { name: 'Classic', values: { scale_k: 1 } },
+      { name: 'Wide', values: { scale_k: 1.5 } },
+    ],
+  },
+
+  sprottD: {
+    name: 'Sprott D',
+    params: [
+      { key: 'a', name: 'a', value: 3, min: 1, max: 6, step: 0.1 },
+    ],
+    fn(x, y, z, p) {
+      return [
+        -y,
+        x + z,
+        x * z + p.a * z * z,
+      ];
+    },
+    init: () => [1, 0, -0.3],
+    dt: 0.015,
+    scale: 5,
+    center: [0, 0, -0.2],
+    presets: [
+      { name: 'Classic', values: { a: 3 } },
+      { name: 'Mild', values: { a: 2 } },
+    ],
+  },
+
+  burkeShaw: {
+    name: 'Burke–Shaw',
+    params: [
+      { key: 'S', name: 'S', value: 10, min: 1, max: 20, step: 0.1 },
+      { key: 'V', name: 'V', value: 4.272, min: 1, max: 10, step: 0.01 },
+    ],
+    fn(x, y, z, p) {
+      return [
+        -p.S * (x + y),
+        -y - p.S * x * z,
+        p.S * x * y + p.V,
+      ];
+    },
+    init: () => [1, 0, 0],
+    dt: 0.002,
+    scale: 3,
+    center: [0, 0, 0],
+    presets: [
+      { name: 'Classic', values: { S: 10, V: 4.272 } },
+      { name: 'Gentle', values: { S: 5, V: 4.272 } },
+    ],
+  },
+
+  noseHoover: {
+    name: 'Nosé–Hoover',
+    params: [
+      { key: 'a', name: 'a', value: 1.5, min: 0.5, max: 3, step: 0.01 },
+    ],
+    fn(x, y, z, p) {
+      return [
+        y,
+        -x + y * z,
+        p.a - y * y,
+      ];
+    },
+    init: () => [0, 0.1, 0],
+    dt: 0.02,
+    scale: 2.5,
+    center: [0, 0, 0],
+    presets: [
+      { name: 'Classic', values: { a: 1.5 } },
+      { name: 'Wide', values: { a: 2.0 } },
+    ],
+  },
+
+  lorenz84: {
+    name: 'Lorenz-84',
+    params: [
+      { key: 'a', name: 'a', value: 0.95, min: 0, max: 3, step: 0.01 },
+      { key: 'b', name: 'b', value: 7.91, min: 0, max: 12, step: 0.01 },
+      { key: 'F', name: 'F (forcing)', value: 4.83, min: 0, max: 10, step: 0.01 },
+      { key: 'G', name: 'G (forcing)', value: 4.66, min: 0, max: 10, step: 0.01 },
+    ],
+    fn(x, y, z, p) {
+      return [
+        -p.a * x - y * y - z * z + p.a * p.F,
+        -y + x * y - p.b * x * z + p.G,
+        -z + p.b * x * y + x * z,
+      ];
+    },
+    init: () => [1, 1, 0],
+    dt: 0.008,
+    scale: 2.5,
+    center: [0, 0, 0],
+    presets: [
+      { name: 'Classic', values: { a: 0.95, b: 7.91, F: 4.83, G: 4.66 } },
+      { name: 'Wild', values: { a: 0.95, b: 7.91, F: 8, G: 1 } },
+    ],
+  },
+};
+
+const SYSTEM_ORDER = [
+  'lorenz', 'rossler', 'chen', 'aizawa', 'thomas', 'halvorsen',
+  'dadras', 'rabinovich', 'sprottB', 'sprottD', 'burkeShaw',
+  'noseHoover', 'lorenz84',
+];
+
+// ═══════════════════════════════════════════════════════════════
+// RK4 INTEGRATOR WITH ADAPTIVE STEP SIZE
+// ═══════════════════════════════════════════════════════════════
+
+function rk4Step(fn, x, y, z, p, dt) {
+  const [k1x, k1y, k1z] = fn(x, y, z, p);
+  const [k2x, k2y, k2z] = fn(x + k1x * dt * 0.5, y + k1y * dt * 0.5, z + k1z * dt * 0.5, p);
+  const [k3x, k3y, k3z] = fn(x + k2x * dt * 0.5, y + k2y * dt * 0.5, z + k2z * dt * 0.5, p);
+  const [k4x, k4y, k4z] = fn(x + k3x * dt, y + k3y * dt, z + k3z * dt, p);
+
+  return [
+    x + (k1x + 2 * k2x + 2 * k3x + k4x) * dt / 6,
+    y + (k1y + 2 * k2y + 2 * k3y + k4y) * dt / 6,
+    z + (k1z + 2 * k2z + 2 * k3z + k4z) * dt / 6,
+    Math.sqrt(k1x * k1x + k1y * k1y + k1z * k1z), // speed magnitude
+  ];
+}
+
+function adaptiveRK4(fn, x, y, z, p, dt, tol = 1e-4) {
+  // Step-doubling method: compare one full step vs two half steps
+  const [x1, y1, z1] = rk4Step(fn, x, y, z, p, dt);
+  const [xh, yh, zh] = rk4Step(fn, x, y, z, p, dt * 0.5);
+  const [x2, y2, z2, spd] = rk4Step(fn, xh, yh, zh, p, dt * 0.5);
+
+  const err = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2);
+
+  let newDt = dt;
+  if (err > tol && dt > 1e-6) {
+    newDt = dt * 0.5;
+  } else if (err < tol * 0.1 && dt < 0.1) {
+    newDt = dt * 1.5;
+  }
+
+  // Divergence check
+  if (!isFinite(x2) || !isFinite(y2) || !isFinite(z2) ||
+      Math.abs(x2) > 1e6 || Math.abs(y2) > 1e6 || Math.abs(z2) > 1e6) {
+    return { x, y, z, speed: 0, dt: dt * 0.25, diverged: true };
+  }
+
+  return { x: x2, y: y2, z: z2, speed: spd, dt: newDt, diverged: false };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TRAIL RING BUFFER
+// ═══════════════════════════════════════════════════════════════
+
+const MAX_TRAIL = 30000;
+
+class Trail {
+  constructor() {
+    this.rawX = new Float64Array(MAX_TRAIL);
+    this.rawY = new Float64Array(MAX_TRAIL);
+    this.rawZ = new Float64Array(MAX_TRAIL);
+    this.speed = new Float32Array(MAX_TRAIL);
+    this.head = 0;
+    this.count = 0;
+  }
+
+  push(x, y, z, spd) {
+    this.rawX[this.head] = x;
+    this.rawY[this.head] = y;
+    this.rawZ[this.head] = z;
+    this.speed[this.head] = spd;
+    this.head = (this.head + 1) % MAX_TRAIL;
+    if (this.count < MAX_TRAIL) this.count++;
+  }
+
+  clear() {
+    this.head = 0;
+    this.count = 0;
+  }
+
+  visibleCount(limit) {
+    return Math.min(this.count, limit);
+  }
+
+  // Get buffer index for i-th visible point (0 = oldest)
+  bufIdx(i, visible) {
+    return (this.head - visible + i + MAX_TRAIL) % MAX_TRAIL;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// THREE.JS RENDERER SETUP
+// ═══════════════════════════════════════════════════════════════
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setClearColor(0x241200);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1;
+document.body.prepend(renderer.domElement);
+renderer.domElement.id = 'three-canvas';
+
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.set(15, 10, 20);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.8;
+controls.target.set(0, 0, 0);
+
+// Bloom post-processing
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloomPass = new UnrealBloomPass(
+  new THREE.Vector2(window.innerWidth, window.innerHeight),
+  1.5,  // strength
+  0.4,  // radius
+  0.1   // threshold
+);
+composer.addPass(bloomPass);
+composer.addPass(new OutputPass());
+
+// Handle resize
+window.addEventListener('resize', () => {
+  const w = window.innerWidth, h = window.innerHeight;
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+  composer.setSize(w, h);
+});
+
+// Subtle axis lines
+const axisLength = 50;
+const axisGeo = new THREE.BufferGeometry();
+const axisPositions = new Float32Array([
+  0, 0, 0, axisLength, 0, 0,
+  0, 0, 0, 0, axisLength, 0,
+  0, 0, 0, 0, 0, axisLength,
+]);
+axisGeo.setAttribute('position', new THREE.BufferAttribute(axisPositions, 3));
+const axisMat = new THREE.LineBasicMaterial({ color: 0xDDC165, transparent: true, opacity: 0.06 });
+scene.add(new THREE.LineSegments(axisGeo, axisMat));
+
+// ═══════════════════════════════════════════════════════════════
+// TRAIL LINE SHADER MATERIAL
+// ═══════════════════════════════════════════════════════════════
+
+const trailVertexShader = `
+  attribute vec3 trailColor;
+  attribute float trailAlpha;
+  varying vec3 vColor;
+  varying float vAlpha;
+  void main() {
+    vColor = trailColor;
+    vAlpha = trailAlpha;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const trailFragmentShader = `
+  varying vec3 vColor;
+  varying float vAlpha;
+  void main() {
+    gl_FragColor = vec4(vColor, vAlpha);
+  }
+`;
+
+// Head point shader — bright circle for bloom pickup
+const headVertexShader = `
+  attribute vec3 headColor;
+  varying vec3 vColor;
+  void main() {
+    vColor = headColor;
+    vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
+    gl_PointSize = 6.0 * (200.0 / -mvPos.z);
+    gl_Position = projectionMatrix * mvPos;
+  }
+`;
+
+const headFragmentShader = `
+  varying vec3 vColor;
+  void main() {
+    float d = length(gl_PointCoord - vec2(0.5));
+    if (d > 0.5) discard;
+    float alpha = smoothstep(0.5, 0.0, d);
+    gl_FragColor = vec4(vColor * 2.0, alpha);
+  }
+`;
+
+// ═══════════════════════════════════════════════════════════════
+// APP STATE
+// ═══════════════════════════════════════════════════════════════
+
+const state = {
+  systemKey: 'lorenz',
+  params: {},
+  speed: 1,
+  trailLength: 8000,
+  colorMode: 'time',
+  multiParticle: false,
+  particleCount: 5,
+  autoOrbit: true,
+  morphOnSwitch: true,
+  paused: false,
+  currentDt: 0.005,
+  maxSpeed: 1,      // tracked for velocity color mapping
+};
+
+// ═══════════════════════════════════════════════════════════════
+// PARTICLE MANAGEMENT
+// ═══════════════════════════════════════════════════════════════
+
+const MAX_PARTICLES = 12;
+const particles = []; // { x, y, z, trail, line, headPoint, dt }
+
+function createTrailLine(hueIndex) {
+  const positions = new Float32Array(MAX_TRAIL * 3);
+  const colors = new Float32Array(MAX_TRAIL * 3);
+  const alphas = new Float32Array(MAX_TRAIL);
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3).setUsage(THREE.DynamicDrawUsage));
+  geometry.setAttribute('trailColor', new THREE.BufferAttribute(colors, 3).setUsage(THREE.DynamicDrawUsage));
+  geometry.setAttribute('trailAlpha', new THREE.BufferAttribute(alphas, 1).setUsage(THREE.DynamicDrawUsage));
+  geometry.setDrawRange(0, 0);
+
+  const material = new THREE.ShaderMaterial({
+    vertexShader: trailVertexShader,
+    fragmentShader: trailFragmentShader,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+
+  const line = new THREE.Line(geometry, material);
+  scene.add(line);
+
+  // Head point
+  const headPos = new Float32Array(3);
+  const headCol = new Float32Array(3);
+  const headGeo = new THREE.BufferGeometry();
+  headGeo.setAttribute('position', new THREE.BufferAttribute(headPos, 3).setUsage(THREE.DynamicDrawUsage));
+  headGeo.setAttribute('headColor', new THREE.BufferAttribute(headCol, 3).setUsage(THREE.DynamicDrawUsage));
+
+  const headMat = new THREE.ShaderMaterial({
+    vertexShader: headVertexShader,
+    fragmentShader: headFragmentShader,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+
+  const headPoint = new THREE.Points(headGeo, headMat);
+  scene.add(headPoint);
+
+  return { line, headPoint, geometry, headGeo };
+}
+
+function initParticles() {
+  // Remove existing
+  for (const p of particles) {
+    scene.remove(p.lineObj.line);
+    scene.remove(p.lineObj.headPoint);
+    p.lineObj.geometry.dispose();
+    p.lineObj.line.material.dispose();
+    p.lineObj.headGeo.dispose();
+    p.lineObj.headPoint.material.dispose();
+  }
+  particles.length = 0;
+
+  const sys = SYSTEMS[state.systemKey];
+  const count = state.multiParticle ? state.particleCount : 1;
+
+  for (let i = 0; i < count; i++) {
+    const init = sys.init();
+    // Slight jitter for multi-particle
+    const jitter = i === 0 ? 0 : 0.01;
+    const x = init[0] + (Math.random() - 0.5) * jitter;
+    const y = init[1] + (Math.random() - 0.5) * jitter;
+    const z = init[2] + (Math.random() - 0.5) * jitter;
+
+    particles.push({
+      x, y, z,
+      trail: new Trail(),
+      lineObj: createTrailLine(i),
+      dt: sys.dt,
+      hueIndex: i,
+    });
+  }
+  state.currentDt = sys.dt;
+  state.maxSpeed = 1;
+}
+
+function resetParticles() {
+  const sys = SYSTEMS[state.systemKey];
+  for (let i = 0; i < particles.length; i++) {
+    const init = sys.init();
+    const jitter = i === 0 ? 0 : 0.01;
+    particles[i].x = init[0] + (Math.random() - 0.5) * jitter;
+    particles[i].y = init[1] + (Math.random() - 0.5) * jitter;
+    particles[i].z = init[2] + (Math.random() - 0.5) * jitter;
+    particles[i].trail.clear();
+    particles[i].dt = sys.dt;
+  }
+  state.currentDt = sys.dt;
+  state.maxSpeed = 1;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// COLOR COMPUTATION
+// ═══════════════════════════════════════════════════════════════
+
+// Particle base hues (for multi-particle mode)
+const PARTICLE_HUES = [30, 0, 190, 280, 120, 330, 60, 210, 150, 45, 250, 170];
+
+function timeColor(t) {
+  // FunForrest gradient: dark brown -> burnt orange -> gold
+  return [
+    0.14 + t * (0.87 - 0.14),
+    0.07 + t * (0.76 - 0.07),
+    0.0 + t * (0.40 - 0.0),
+  ];
+}
+
+function velocityColor(speed, maxSpeed) {
+  const t = Math.min(speed / Math.max(maxSpeed, 0.01), 1);
+  // Blue -> Cyan -> Green -> Yellow -> Red
+  const hue = (1 - t) * 240;
+  return hslToRgb(hue / 360, 0.9, 0.45 + t * 0.15);
+}
+
+function monoColor(t) {
+  const brightness = 0.15 + t * 0.85;
+  return [0.87 * brightness, 0.76 * brightness, 0.40 * brightness];
+}
+
+function hslToRgb(h, s, l) {
+  let r, g, b;
+  if (s === 0) {
+    r = g = b = l;
+  } else {
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    r = hueToRgb(p, q, h + 1 / 3);
+    g = hueToRgb(p, q, h);
+    b = hueToRgb(p, q, h - 1 / 3);
+  }
+  return [r, g, b];
+}
+
+function hueToRgb(p, q, t) {
+  if (t < 0) t += 1;
+  if (t > 1) t -= 1;
+  if (t < 1 / 6) return p + (q - p) * 6 * t;
+  if (t < 1 / 2) return q;
+  if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+  return p;
+}
+
+function hueShift(rgb, hueOffset) {
+  // Simple hue rotation: convert rgb to hsl, shift, convert back
+  const [r, g, b] = rgb;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h, s;
+  const l = (max + min) / 2;
+
+  if (max === min) {
+    h = s = 0;
+  } else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+    else if (max === g) h = ((b - r) / d + 2) / 6;
+    else h = ((r - g) / d + 4) / 6;
+  }
+
+  return hslToRgb((h + hueOffset + 1) % 1, s, l);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UPDATE TRAIL GEOMETRY
+// ═══════════════════════════════════════════════════════════════
+
+function updateTrailGeometry(particle) {
+  const { trail, lineObj, hueIndex } = particle;
+  const sys = SYSTEMS[state.systemKey];
+  const limit = state.trailLength;
+  const visible = trail.visibleCount(limit);
+
+  if (visible < 2) {
+    lineObj.geometry.setDrawRange(0, 0);
+    return;
+  }
+
+  const posAttr = lineObj.geometry.attributes.position;
+  const colAttr = lineObj.geometry.attributes.trailColor;
+  const alpAttr = lineObj.geometry.attributes.trailAlpha;
+
+  const scale = sys.scale;
+  const cx = sys.center[0], cy = sys.center[1], cz = sys.center[2];
+
+  // Multi-particle hue offset
+  const hueOffset = state.multiParticle ? PARTICLE_HUES[hueIndex % PARTICLE_HUES.length] / 360 : 0;
+
+  let maxSpd = state.maxSpeed;
+
+  for (let i = 0; i < visible; i++) {
+    const bi = trail.bufIdx(i, visible);
+    const px = (trail.rawX[bi] - cx) * scale;
+    const py = (trail.rawY[bi] - cy) * scale;
+    const pz = (trail.rawZ[bi] - cz) * scale;
+
+    posAttr.array[i * 3] = px;
+    posAttr.array[i * 3 + 1] = py;
+    posAttr.array[i * 3 + 2] = pz;
+
+    const t = i / (visible - 1);
+    const spd = trail.speed[bi];
+    if (spd > maxSpd) maxSpd = spd;
+
+    let [r, g, b] = state.colorMode === 'velocity'
+      ? velocityColor(spd, state.maxSpeed)
+      : state.colorMode === 'mono'
+        ? monoColor(t)
+        : timeColor(t);
+
+    if (state.multiParticle && hueOffset > 0) {
+      [r, g, b] = hueShift([r, g, b], hueOffset);
+    }
+
+    colAttr.array[i * 3] = r;
+    colAttr.array[i * 3 + 1] = g;
+    colAttr.array[i * 3 + 2] = b;
+
+    alpAttr.array[i] = 0.05 + t * 0.95;
+  }
+
+  state.maxSpeed = maxSpd * 0.99 + 0.01; // slowly decay
+
+  posAttr.needsUpdate = true;
+  colAttr.needsUpdate = true;
+  alpAttr.needsUpdate = true;
+  lineObj.geometry.setDrawRange(0, visible);
+
+  // Update head point
+  const lastBi = trail.bufIdx(visible - 1, visible);
+  const hx = (trail.rawX[lastBi] - cx) * scale;
+  const hy = (trail.rawY[lastBi] - cy) * scale;
+  const hz = (trail.rawZ[lastBi] - cz) * scale;
+
+  const headPosAttr = lineObj.headGeo.attributes.position;
+  const headColAttr = lineObj.headGeo.attributes.headColor;
+  headPosAttr.array[0] = hx;
+  headPosAttr.array[1] = hy;
+  headPosAttr.array[2] = hz;
+
+  let [hr, hg, hb] = state.colorMode === 'mono'
+    ? [0.87, 0.76, 0.40]
+    : state.colorMode === 'velocity'
+      ? velocityColor(trail.speed[lastBi], state.maxSpeed)
+      : [0.87, 0.76, 0.40];
+
+  if (state.multiParticle && hueOffset > 0) {
+    [hr, hg, hb] = hueShift([hr, hg, hb], hueOffset);
+  }
+
+  headColAttr.array[0] = hr;
+  headColAttr.array[1] = hg;
+  headColAttr.array[2] = hb;
+  headPosAttr.needsUpdate = true;
+  headColAttr.needsUpdate = true;
+  lineObj.headGeo.setDrawRange(0, 1);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UI SETUP
+// ═══════════════════════════════════════════════════════════════
+
+function buildSystemSelect() {
+  const sel = document.getElementById('system-select');
+  sel.innerHTML = '';
+  for (const key of SYSTEM_ORDER) {
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = SYSTEMS[key].name;
+    sel.appendChild(opt);
+  }
+  sel.value = state.systemKey;
+  sel.addEventListener('change', () => switchSystem(sel.value));
+}
+
+function buildParamSliders() {
+  const container = document.getElementById('params-container');
+  container.innerHTML = '';
+  const sys = SYSTEMS[state.systemKey];
+  for (const p of sys.params) {
+    const group = document.createElement('div');
+    group.className = 'param-group';
+    const precision = p.step < 0.01 ? 4 : p.step < 0.1 ? 3 : p.step < 1 ? 2 : 1;
+    group.innerHTML = `
+      <label>${p.name} <span class="val" id="val-${p.key}">${state.params[p.key].toFixed(precision)}</span></label>
+      <input type="range" id="param-${p.key}" min="${p.min}" max="${p.max}" step="${p.step}" value="${state.params[p.key]}">
+    `;
+    container.appendChild(group);
+    const slider = group.querySelector('input');
+    slider.addEventListener('input', () => {
+      const v = parseFloat(slider.value);
+      state.params[p.key] = v;
+      document.getElementById(`val-${p.key}`).textContent = v.toFixed(precision);
+    });
+  }
+}
+
+function buildPresetButtons() {
+  const container = document.getElementById('presets-container');
+  container.innerHTML = '';
+  const sys = SYSTEMS[state.systemKey];
+  for (const preset of sys.presets) {
+    const btn = document.createElement('button');
+    btn.className = 'preset-btn';
+    btn.textContent = preset.name;
+    btn.addEventListener('click', () => applyPreset(preset));
+    container.appendChild(btn);
+  }
+}
+
+function applyPreset(preset) {
+  const sys = SYSTEMS[state.systemKey];
+  for (const [key, val] of Object.entries(preset.values)) {
+    state.params[key] = val;
+    const slider = document.getElementById(`param-${key}`);
+    if (slider) slider.value = val;
+    const valEl = document.getElementById(`val-${key}`);
+    const paramDef = sys.params.find(p => p.key === key);
+    const precision = paramDef && paramDef.step < 0.01 ? 4 : paramDef && paramDef.step < 0.1 ? 3 : 2;
+    if (valEl) valEl.textContent = val.toFixed(precision);
+  }
+  if (!state.morphOnSwitch) resetParticles();
+}
+
+function initParamsFromSystem() {
+  const sys = SYSTEMS[state.systemKey];
+  state.params = {};
+  for (const p of sys.params) {
+    state.params[p.key] = p.value;
+  }
+}
+
+function switchSystem(key) {
+  state.systemKey = key;
+  initParamsFromSystem();
+  buildParamSliders();
+  buildPresetButtons();
+  document.getElementById('system-title').textContent = SYSTEMS[key].name;
+  document.getElementById('system-select').value = key;
+  if (!state.morphOnSwitch) {
+    resetParticles();
+  } else {
+    // Morph mode: keep positions, just switch ODE. Reset dt.
+    const sys = SYSTEMS[key];
+    for (const p of particles) {
+      p.dt = sys.dt;
+      p.trail.clear();
+    }
+    state.currentDt = sys.dt;
+  }
+}
+
+function setupUI() {
+  buildSystemSelect();
+  initParamsFromSystem();
+  buildParamSliders();
+  buildPresetButtons();
+
+  // Speed slider
+  const speedSlider = document.getElementById('speed');
+  speedSlider.addEventListener('input', () => {
+    state.speed = parseFloat(speedSlider.value);
+    document.getElementById('speed-val').textContent = state.speed.toFixed(1);
+  });
+
+  // Trail length slider
+  const trailSlider = document.getElementById('trail-len');
+  trailSlider.addEventListener('input', () => {
+    state.trailLength = parseInt(trailSlider.value);
+    document.getElementById('trail-val').textContent = state.trailLength;
+  });
+
+  // Bloom slider
+  const bloomSlider = document.getElementById('bloom-strength');
+  bloomSlider.addEventListener('input', () => {
+    const v = parseFloat(bloomSlider.value);
+    bloomPass.strength = v;
+    document.getElementById('bloom-val').textContent = v.toFixed(1);
+  });
+
+  // Color mode
+  document.getElementById('color-mode').addEventListener('change', e => {
+    state.colorMode = e.target.value;
+  });
+
+  // Multi-particle toggle
+  const multiToggle = document.getElementById('multi-toggle');
+  multiToggle.addEventListener('change', e => {
+    state.multiParticle = e.target.checked;
+    document.getElementById('particle-count-group').style.display = state.multiParticle ? 'block' : 'none';
+    initParticles();
+  });
+
+  // Particle count
+  const particleSlider = document.getElementById('particle-count');
+  particleSlider.addEventListener('input', () => {
+    state.particleCount = parseInt(particleSlider.value);
+    document.getElementById('particle-val').textContent = state.particleCount;
+    if (state.multiParticle) initParticles();
+  });
+
+  // Auto-orbit
+  document.getElementById('orbit-toggle').addEventListener('change', e => {
+    state.autoOrbit = e.target.checked;
+    controls.autoRotate = state.autoOrbit;
+  });
+
+  // Morph on switch
+  document.getElementById('morph-toggle').addEventListener('change', e => {
+    state.morphOnSwitch = e.target.checked;
+  });
+
+  // Reset button
+  document.getElementById('btn-reset').addEventListener('click', () => resetParticles());
+
+  // Screenshot button
+  document.getElementById('btn-screenshot').addEventListener('click', savePNG);
+
+  // Keyboard shortcuts
+  window.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+    switch (e.key.toLowerCase()) {
+      case 'h':
+        const ctrl = document.getElementById('controls');
+        ctrl.style.display = ctrl.style.display === 'none' ? 'block' : 'none';
+        break;
+      case ' ':
+        e.preventDefault();
+        state.paused = !state.paused;
+        break;
+      case 'r':
+        resetParticles();
+        break;
+      case 's':
+        savePNG();
+        break;
+    }
+  });
+}
+
+function savePNG() {
+  // Render one frame to the canvas before capturing
+  composer.render();
+  const link = document.createElement('a');
+  link.download = `${SYSTEMS[state.systemKey].name.toLowerCase()}-attractor.png`;
+  link.href = renderer.domElement.toDataURL('image/png');
+  link.click();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MAIN LOOP
+// ═══════════════════════════════════════════════════════════════
+
+let lastTime = 0;
+let frameCount = 0;
+let fpsTime = 0;
+const fpsEl = document.getElementById('fps');
+const ptsEl = document.getElementById('points');
+const dtEl = document.getElementById('dt-display');
+
+function animate(time) {
+  requestAnimationFrame(animate);
+
+  // FPS counter
+  frameCount++;
+  if (time - fpsTime > 1000) {
+    fpsEl.textContent = frameCount + ' FPS';
+    frameCount = 0;
+    fpsTime = time;
+  }
+
+  const elapsed = Math.min((time - lastTime) / 1000, 0.05);
+  lastTime = time;
+
+  controls.update();
+
+  if (!state.paused) {
+    const sys = SYSTEMS[state.systemKey];
+    const stepsPerFrame = Math.round(4 * state.speed);
+
+    let totalPoints = 0;
+    for (const p of particles) {
+      for (let s = 0; s < stepsPerFrame; s++) {
+        const result = adaptiveRK4(sys.fn, p.x, p.y, p.z, state.params, p.dt);
+        if (result.diverged) {
+          // Re-init this particle
+          const init = sys.init();
+          p.x = init[0]; p.y = init[1]; p.z = init[2];
+          p.dt = sys.dt;
+        } else {
+          p.x = result.x;
+          p.y = result.y;
+          p.z = result.z;
+          p.dt = result.dt;
+          p.trail.push(result.x, result.y, result.z, result.speed);
+        }
+      }
+      updateTrailGeometry(p);
+      totalPoints += p.trail.visibleCount(state.trailLength);
+    }
+
+    ptsEl.textContent = totalPoints.toLocaleString() + ' pts';
+    dtEl.textContent = 'dt ' + particles[0].dt.toFixed(5);
+    state.currentDt = particles[0].dt;
+  }
+
+  composer.render();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+
+setupUI();
+initParticles();
+requestAnimationFrame(animate);
+</script>
+</body>
+</html>
