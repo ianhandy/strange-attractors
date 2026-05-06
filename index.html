@@ -211,6 +211,385 @@
     pointer-events: none;
     text-align: right;
   }
+
+  /* ── System Description Subtitle ── */
+  #system-description {
+    font-size: 0.6rem;
+    color: rgba(221,193,101,0.45);
+    font-style: italic;
+    margin: 6px 0 2px 0;
+    line-height: 1.4;
+  }
+
+  /* ── Parameter Tooltip Icon ── */
+  .param-info {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    line-height: 14px;
+    text-align: center;
+    font-size: 0.55rem;
+    font-style: normal;
+    color: rgba(221,193,101,0.35);
+    border: 1px solid rgba(221,193,101,0.15);
+    border-radius: 50%;
+    cursor: help;
+    position: relative;
+    margin-left: 4px;
+    vertical-align: middle;
+    flex-shrink: 0;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .param-info:hover {
+    color: #DDC165;
+    border-color: rgba(221,193,101,0.4);
+  }
+  .param-info .param-tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(26,13,0,0.95);
+    border: 1px solid rgba(229,89,28,0.3);
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 0.6rem;
+    font-style: normal;
+    color: rgba(221,193,101,0.8);
+    white-space: normal;
+    width: 200px;
+    line-height: 1.4;
+    z-index: 200;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  }
+  .param-info:hover .param-tooltip {
+    display: block;
+  }
+
+  /* ── Help Button ── */
+  #help-btn {
+    position: fixed;
+    bottom: 40px; right: 20px;
+    width: 32px; height: 32px;
+    background: rgba(26,13,0,0.88);
+    border: 1px solid rgba(221,193,101,0.2);
+    border-radius: 50%;
+    color: #DDC165;
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 150;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(12px);
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    padding: 0;
+    line-height: 1;
+  }
+  #help-btn:hover {
+    background: rgba(229,89,28,0.2);
+    border-color: #E5591C;
+    box-shadow: 0 0 14px rgba(229,89,28,0.25);
+  }
+
+  /* ── Help Overlay ── */
+  #help-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(18,8,0,0.85);
+    z-index: 500;
+    backdrop-filter: blur(8px);
+    overflow-y: auto;
+    padding: 40px 20px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  #help-overlay.visible {
+    display: block;
+    opacity: 1;
+  }
+  #help-overlay.fade-in {
+    opacity: 1;
+  }
+
+  #help-content {
+    max-width: 640px;
+    margin: 0 auto;
+    background: rgba(26,13,0,0.92);
+    border: 1px solid rgba(221,193,101,0.12);
+    border-radius: 10px;
+    padding: 30px 32px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+  }
+  #help-content h2 {
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #DDC165;
+    margin-bottom: 14px;
+    text-shadow: 0 0 10px rgba(221,193,101,0.3);
+  }
+  #help-content h3 {
+    font-size: 0.72rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #E5591C;
+    margin: 18px 0 8px 0;
+    border-top: 1px solid rgba(221,193,101,0.08);
+    padding-top: 14px;
+  }
+  #help-content h3:first-of-type {
+    border-top: none;
+    padding-top: 0;
+    margin-top: 8px;
+  }
+  #help-content p, #help-content li {
+    font-size: 0.68rem;
+    color: rgba(221,193,101,0.7);
+    line-height: 1.7;
+    margin-bottom: 6px;
+  }
+  #help-content ul {
+    list-style: none;
+    padding: 0;
+  }
+  #help-content li::before {
+    content: '\2022';
+    color: #E5591C;
+    margin-right: 8px;
+  }
+  #help-content .help-section {
+    margin-bottom: 10px;
+  }
+  #help-content .help-key {
+    display: inline-block;
+    background: rgba(229,89,28,0.12);
+    border: 1px solid rgba(229,89,28,0.3);
+    border-radius: 3px;
+    padding: 1px 6px;
+    font-size: 0.62rem;
+    color: #DDC165;
+    font-family: 'Courier New', monospace;
+  }
+  #help-content .footer-note {
+    font-size: 0.6rem;
+    color: rgba(221,193,101,0.35);
+    font-style: italic;
+    line-height: 1.7;
+    margin-top: 6px;
+  }
+  #help-close {
+    position: absolute;
+    top: 16px; right: 24px;
+    background: none;
+    border: none;
+    color: rgba(221,193,101,0.4);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: color 0.2s;
+    font-family: 'Courier New', monospace;
+  }
+  #help-close:hover {
+    color: #DDC165;
+    background: none;
+    border: none;
+    box-shadow: none;
+  }
+
+  /* ── Mobile Toggle Button ── */
+  #mobile-panel-toggle {
+    display: none;
+  }
+  #mobile-backdrop {
+    display: none;
+  }
+  #mobile-system-label {
+    display: none;
+  }
+
+  /* ── Mobile Styles ── */
+  @media (max-width: 639px) {
+    #mobile-panel-toggle {
+      display: flex;
+      position: fixed;
+      top: 12px; left: 12px;
+      width: 36px; height: 36px;
+      background: rgba(26,13,0,0.88);
+      border: 1px solid rgba(221,193,101,0.2);
+      border-radius: 50%;
+      color: #DDC165;
+      font-size: 1.1rem;
+      cursor: pointer;
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+      padding: 0;
+      line-height: 1;
+      transition: all 0.25s ease;
+    }
+    #mobile-panel-toggle:hover,
+    #mobile-panel-toggle:active {
+      background: rgba(229,89,28,0.2);
+      border-color: #E5591C;
+      box-shadow: 0 0 14px rgba(229,89,28,0.25);
+    }
+
+    #mobile-backdrop {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(18,8,0,0.55);
+      z-index: 90;
+      backdrop-filter: blur(2px);
+    }
+    #mobile-backdrop.visible {
+      display: block;
+    }
+
+    #controls {
+      position: fixed;
+      top: 0; left: 0;
+      width: 280px;
+      max-width: 85vw;
+      height: 100vh;
+      max-height: 100vh;
+      border-radius: 0 8px 8px 0;
+      padding: 56px 16px 20px 16px;
+      transform: translateX(-100%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 101;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    #controls.mobile-open {
+      transform: translateX(0);
+    }
+
+    /* Touch-friendly slider targets */
+    input[type="range"] {
+      height: 6px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      width: 22px; height: 22px;
+    }
+
+    /* Larger preset buttons for touch */
+    .preset-btn {
+      padding: 7px 12px;
+      font-size: 0.65rem;
+    }
+
+    /* Larger tooltip icons */
+    .param-info {
+      width: 22px;
+      height: 22px;
+      line-height: 22px;
+      font-size: 0.65rem;
+    }
+
+    /* Larger select for touch */
+    select {
+      padding: 8px 10px;
+      font-size: 0.75rem;
+    }
+
+    /* Larger checkboxes */
+    .checkbox-row input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+    }
+    .checkbox-row label {
+      font-size: 0.72rem;
+    }
+
+    /* Hide the top-right title overlay on mobile */
+    #title-overlay {
+      display: none !important;
+    }
+
+    /* Mobile system label — always visible, top-left under toggle */
+    #mobile-system-label {
+      display: block;
+      position: fixed;
+      top: 52px; left: 12px;
+      z-index: 90;
+      pointer-events: none;
+    }
+    #mobile-system-label .mob-sys-name {
+      font-size: 0.7rem;
+      color: rgba(221,193,101,0.6);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      text-shadow: 0 0 8px rgba(0,0,0,0.8);
+    }
+    #mobile-system-label .mob-sys-desc {
+      font-size: 0.55rem;
+      color: rgba(221,193,101,0.3);
+      font-style: italic;
+      margin-top: 2px;
+      max-width: 260px;
+      line-height: 1.3;
+      text-shadow: 0 0 8px rgba(0,0,0,0.8);
+    }
+
+    /* Replace keyboard hints with touch hints on mobile */
+    #keyhint {
+      display: none !important;
+    }
+    #mobile-hints {
+      display: block;
+      position: fixed;
+      bottom: 12px; right: 12px;
+      font-size: 0.52rem;
+      color: rgba(221,193,101,0.2);
+      z-index: 90;
+      pointer-events: none;
+      text-align: right;
+    }
+
+    /* Smaller info bar on mobile */
+    #info {
+      font-size: 0.52rem;
+      bottom: 12px; left: 12px;
+    }
+
+    /* Help button adjustment */
+    #help-btn {
+      bottom: 32px; right: 12px;
+    }
+
+    /* Help content mobile */
+    #help-content {
+      padding: 20px 16px;
+    }
+
+    /* Ensure help overlay bullets don't leak when hidden */
+    #help-overlay:not(.visible) {
+      visibility: hidden;
+      position: absolute;
+      overflow: hidden;
+      width: 0;
+      height: 0;
+    }
+  }
+
+  /* Desktop: hide mobile-only elements */
+  @media (min-width: 640px) {
+    #mobile-hints {
+      display: none;
+    }
+  }
 </style>
 </head>
 <body>
@@ -219,6 +598,7 @@
   <h2>Strange Attractors</h2>
 
   <select id="system-select"></select>
+  <div id="system-description"></div>
 
   <div id="presets-container" class="preset-row"></div>
 
@@ -273,6 +653,14 @@
   </div>
 </div>
 
+<button id="mobile-panel-toggle" aria-label="Toggle controls">&#9776;</button>
+<div id="mobile-backdrop"></div>
+<div id="mobile-system-label">
+  <div class="mob-sys-name" id="mob-sys-name">Lorenz</div>
+  <div class="mob-sys-desc" id="mob-sys-desc"></div>
+</div>
+<div id="mobile-hints">Drag to rotate · Pinch to zoom · &#9776; for controls</div>
+
 <div id="title-overlay">
   <h1 id="system-title">Lorenz</h1>
   <p class="subtitle">Drag to rotate · Scroll to zoom</p>
@@ -282,8 +670,65 @@
   <span id="fps">0 FPS</span> · <span id="points">0 pts</span> · <span id="dt-display">dt 0.005</span>
 </div>
 
+<button id="help-btn" title="Help (?)" aria-label="Help">?</button>
+
+<div id="help-overlay">
+  <div id="help-content" style="position:relative;">
+    <button id="help-close">&times;</button>
+    <h2>Strange Attractor Explorer</h2>
+
+    <h3>What am I looking at?</h3>
+    <div class="help-section">
+      <ul>
+        <li>A <strong style="color:#DDC165;">strange attractor</strong> is the long-term behavior of a chaotic dynamical system</li>
+        <li>These are solutions to differential equations &mdash; simple rules that produce infinitely complex, never-repeating paths</li>
+        <li>The glowing trail traces a single particle moving through 3D space according to these equations</li>
+        <li>Despite appearing random, attractors have precise geometric structure &mdash; zoom in and you'll see the same patterns at every scale</li>
+      </ul>
+    </div>
+
+    <h3>How to interact</h3>
+    <div class="help-section">
+      <ul>
+        <li><strong style="color:#DDC165;">Drag</strong> to rotate the view around the attractor</li>
+        <li><strong style="color:#DDC165;">Scroll</strong> to zoom in/out</li>
+        <li>Use the <strong style="color:#DDC165;">system dropdown</strong> to switch between 13 different attractors</li>
+        <li>Try the <strong style="color:#DDC165;">presets</strong> to see different behaviors of the same system</li>
+        <li>Adjust <strong style="color:#DDC165;">parameters</strong> to explore the edge of chaos</li>
+        <li><span class="help-key">Space</span> pause &nbsp; <span class="help-key">R</span> reset &nbsp; <span class="help-key">S</span> screenshot &nbsp; <span class="help-key">H</span> hide panel &nbsp; <span class="help-key">?</span> this help</li>
+      </ul>
+    </div>
+
+    <h3>What the controls do</h3>
+    <div class="help-section">
+      <ul>
+        <li><strong style="color:#DDC165;">Parameters</strong> &mdash; Each system's differential equation has constants. Changing them warps the attractor's shape. Small changes can cause sudden transitions between order and chaos.</li>
+        <li><strong style="color:#DDC165;">Speed</strong> &mdash; How many integration steps per frame. Faster = longer trails per second.</li>
+        <li><strong style="color:#DDC165;">Trail Length</strong> &mdash; How many points the trail remembers. Longer = see more history.</li>
+        <li><strong style="color:#DDC165;">Bloom</strong> &mdash; Glow intensity from additive blending that makes it luminous.</li>
+        <li><strong style="color:#DDC165;">Color modes</strong> &mdash; Time gradient (age-based), Velocity map (speed-based), FunForrest mono (brightness only).</li>
+        <li><strong style="color:#DDC165;">Multi-particle</strong> &mdash; Run several particles simultaneously to see how nearby trajectories diverge (demonstrates sensitive dependence).</li>
+        <li><strong style="color:#DDC165;">Auto-orbit</strong> &mdash; Camera slowly rotates for a cinematic view.</li>
+        <li><strong style="color:#DDC165;">Morph on switch</strong> &mdash; When changing systems, keeps the particle's current position (smooth morph) vs. reinitializing.</li>
+      </ul>
+    </div>
+
+    <h3 id="help-systems-title">The 13 Systems</h3>
+    <div class="help-section" id="help-systems-list"></div>
+
+    <h3>Why it matters</h3>
+    <div class="help-section">
+      <ul>
+        <li>Chaos theory shows that deterministic systems can be fundamentally unpredictable</li>
+        <li>Weather, turbulence, population dynamics, heart rhythms &mdash; all governed by similar equations</li>
+        <li>These visualizations reveal the hidden geometric order within apparent randomness</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
 <div id="keyhint">
-  H — hide panel · Space — pause · R — reset · S — screenshot
+  H — hide panel · Space — pause · R — reset · S — screenshot · ? — help
 </div>
 
 <script type="importmap">
@@ -628,6 +1073,127 @@ const SYSTEM_ORDER = [
   'dadras', 'rabinovich', 'sprottB', 'sprottD', 'burkeShaw',
   'noseHoover', 'lorenz84',
 ];
+
+// ═══════════════════════════════════════════════════════════════
+// SYSTEM DESCRIPTIONS & PARAMETER TOOLTIPS
+// ═══════════════════════════════════════════════════════════════
+
+const SYSTEM_DESCRIPTIONS = {
+  lorenz: {
+    short: 'The original strange attractor (1963). Models atmospheric convection. The "butterfly effect" — named for this system\'s butterfly-shaped orbit.',
+    year: '1963',
+  },
+  rossler: {
+    short: 'Simplest known chaotic attractor (1976). A single folding mechanism produces chaos from 3 simple equations.',
+    year: '1976',
+  },
+  chen: {
+    short: 'A dual of the Lorenz system (1999). Similar butterfly wings but with different symmetry properties.',
+    year: '1999',
+  },
+  aizawa: {
+    short: 'A 6-parameter system that produces torus-like orbits collapsing into chaos. Beautiful transition between order and disorder.',
+    year: '',
+  },
+  thomas: {
+    short: 'A cyclically symmetric system (1999). Known for smooth, elegant curves. Parameter b controls the transition from order to chaos.',
+    year: '1999',
+  },
+  halvorsen: {
+    short: 'Produces a distinctive triangular orbit that fills space in three-fold symmetric lobes.',
+    year: '',
+  },
+  dadras: {
+    short: 'A 5-parameter system (2010) with unusual multi-scroll behavior. Can produce 2, 3, or 4 scroll attractors.',
+    year: '2010',
+  },
+  rabinovich: {
+    short: 'Models wave interaction in plasma physics (1979). Extremely sensitive to initial conditions, even for a chaotic system.',
+    year: '1979',
+  },
+  sprottB: {
+    short: 'One of Julien Sprott\'s minimal chaotic systems. Maximum chaos from minimum complexity.',
+    year: '',
+  },
+  sprottD: {
+    short: 'Another Sprott minimal system with a distinctive folded structure.',
+    year: '',
+  },
+  burkeShaw: {
+    short: 'Derived from the Lorenz system (1981). Produces compact, intricately folded orbits.',
+    year: '1981',
+  },
+  noseHoover: {
+    short: 'From molecular dynamics (1984). Models a thermostat — a system that maintains constant temperature through feedback.',
+    year: '1984',
+  },
+  lorenz84: {
+    short: 'Lorenz\'s simplified atmospheric model (1984). Models large-scale weather patterns with seasonal forcing.',
+    year: '1984',
+  },
+};
+
+const PARAM_TOOLTIPS = {
+  lorenz: {
+    sigma: 'Prandtl number — how fast heat diffuses vs. how fast the fluid flows',
+    rho: 'Rayleigh number — temperature difference driving convection. Above ~24.7, chaos begins',
+    beta: 'Geometric factor of the convection cell',
+  },
+  rossler: {
+    a: 'Controls the speed of rotation in the x-y plane',
+    b: 'Offset that shifts the attractor along z when folding occurs',
+    c: 'Controls the size of the fold — higher values produce larger excursions and more complex folding',
+  },
+  chen: {
+    a: 'Primary coupling — controls how strongly x and y influence each other',
+    b: 'Damping on the z axis — higher values shrink the attractor vertically',
+    c: 'Secondary coupling — affects the spread of the butterfly wings',
+  },
+  aizawa: {
+    a: 'Controls the z-axis restoring force — affects vertical oscillation amplitude',
+    b: 'Shifts the equilibrium — changes where the torus forms',
+    c: 'Constant forcing term — pushes the system away from the origin',
+    d: 'Rotation speed in the x-y plane — higher = faster spinning',
+    e: 'Nonlinear coupling strength — controls torus-to-chaos transition',
+    f: 'Asymmetric perturbation — breaks the rotational symmetry',
+  },
+  thomas: {
+    b: 'Dissipation rate — above ~0.33 the system converges to a point. Below ~0.21 it becomes chaotic. The sweet spot produces elegant curves.',
+  },
+  halvorsen: {
+    a: 'Damping coefficient — controls how tightly the three lobes wind. Lower = wider spread.',
+  },
+  dadras: {
+    a: 'Controls orbit contraction — higher values pull trajectories inward',
+    b: 'Nonlinear coupling — affects how the scrolls interact',
+    c: 'Y-axis growth rate — changes the vertical spread',
+    d: 'Cross-coupling between x and y — controls scroll formation',
+    e: 'Z-axis damping — higher values flatten the attractor',
+  },
+  rabinovich: {
+    gamma: 'Dissipation — controls energy loss. Small changes cause dramatic restructuring.',
+    alpha: 'Nonlinear coupling strength — the system is extraordinarily sensitive to this parameter',
+  },
+  sprottB: {
+    scale_k: 'Perturbation scale — warps the system\'s single nonlinearity. At 1.0, the classic minimal form.',
+  },
+  sprottD: {
+    a: 'Controls the z-axis nonlinearity — higher values create deeper folding',
+  },
+  burkeShaw: {
+    S: 'Coupling strength — analogous to the Lorenz Prandtl number. Controls orbit speed.',
+    V: 'Forcing constant — shifts the attractor along z and controls fold depth',
+  },
+  noseHoover: {
+    a: 'Thermostat coupling — controls how strongly the feedback loop acts. Higher = wider orbits.',
+  },
+  lorenz84: {
+    a: 'Damping of the large-scale flow — controls dissipation rate',
+    b: 'Interaction coefficient between wave modes — affects asymmetry',
+    F: 'Symmetric thermal forcing — drives the large-scale circulation. Like seasonal heating.',
+    G: 'Asymmetric thermal forcing — breaks symmetry. Like land-ocean temperature contrast.',
+  },
+};
 
 // ═══════════════════════════════════════════════════════════════
 // RK4 INTEGRATOR WITH ADAPTIVE STEP SIZE
@@ -1121,12 +1687,17 @@ function buildParamSliders() {
   const container = document.getElementById('params-container');
   container.innerHTML = '';
   const sys = SYSTEMS[state.systemKey];
+  const tooltips = PARAM_TOOLTIPS[state.systemKey] || {};
   for (const p of sys.params) {
     const group = document.createElement('div');
     group.className = 'param-group';
     const precision = p.step < 0.01 ? 4 : p.step < 0.1 ? 3 : p.step < 1 ? 2 : 1;
+    const tooltip = tooltips[p.key];
+    const infoHtml = tooltip
+      ? `<span class="param-info">\u24D8<span class="param-tooltip">${tooltip}</span></span>`
+      : '';
     group.innerHTML = `
-      <label>${p.name} <span class="val" id="val-${p.key}">${state.params[p.key].toFixed(precision)}</span></label>
+      <label>${p.name}${infoHtml} <span class="val" id="val-${p.key}">${state.params[p.key].toFixed(precision)}</span></label>
       <input type="range" id="param-${p.key}" min="${p.min}" max="${p.max}" step="${p.step}" value="${state.params[p.key]}">
     `;
     container.appendChild(group);
@@ -1174,11 +1745,28 @@ function initParamsFromSystem() {
   }
 }
 
+function updateSystemDescription() {
+  const desc = SYSTEM_DESCRIPTIONS[state.systemKey];
+  const el = document.getElementById('system-description');
+  el.textContent = desc ? desc.short : '';
+  updateMobileSystemLabel();
+}
+
+function updateMobileSystemLabel() {
+  const sys = SYSTEMS[state.systemKey];
+  const desc = SYSTEM_DESCRIPTIONS[state.systemKey];
+  const nameEl = document.getElementById('mob-sys-name');
+  const descEl = document.getElementById('mob-sys-desc');
+  if (nameEl) nameEl.textContent = sys ? sys.name : '';
+  if (descEl) descEl.textContent = desc ? desc.short : '';
+}
+
 function switchSystem(key) {
   state.systemKey = key;
   initParamsFromSystem();
   buildParamSliders();
   buildPresetButtons();
+  updateSystemDescription();
   document.getElementById('system-title').textContent = SYSTEMS[key].name;
   document.getElementById('system-select').value = key;
   if (!state.morphOnSwitch) {
@@ -1260,13 +1848,36 @@ function setupUI() {
   // Screenshot button
   document.getElementById('btn-screenshot').addEventListener('click', savePNG);
 
+  // Initialize system description
+  updateSystemDescription();
+
+  // Build help overlay systems list
+  buildHelpSystemsList();
+
+  // Help overlay
+  setupHelp();
+
   // Keyboard shortcuts
   window.addEventListener('keydown', e => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
-    switch (e.key.toLowerCase()) {
+    const key = e.key;
+    if (key === '?') { toggleHelp(); return; }
+    if (key === 'Escape') {
+      if (isMobile() && document.getElementById('controls').classList.contains('mobile-open')) {
+        closeMobilePanel();
+        return;
+      }
+      closeHelp();
+      return;
+    }
+    switch (key.toLowerCase()) {
       case 'h':
-        const ctrl = document.getElementById('controls');
-        ctrl.style.display = ctrl.style.display === 'none' ? 'block' : 'none';
+        if (isMobile()) {
+          toggleMobilePanel();
+        } else {
+          const ctrl = document.getElementById('controls');
+          ctrl.style.display = ctrl.style.display === 'none' ? 'block' : 'none';
+        }
         break;
       case ' ':
         e.preventDefault();
@@ -1280,6 +1891,103 @@ function setupUI() {
         break;
     }
   });
+
+  // ── Mobile panel toggle ──
+  const mobileToggleBtn = document.getElementById('mobile-panel-toggle');
+  const mobileBackdrop = document.getElementById('mobile-backdrop');
+
+  function isMobile() {
+    return window.innerWidth < 640;
+  }
+
+  function openMobilePanel() {
+    document.getElementById('controls').classList.add('mobile-open');
+    mobileBackdrop.classList.add('visible');
+  }
+
+  function closeMobilePanel() {
+    document.getElementById('controls').classList.remove('mobile-open');
+    mobileBackdrop.classList.remove('visible');
+  }
+
+  function toggleMobilePanel() {
+    if (document.getElementById('controls').classList.contains('mobile-open')) {
+      closeMobilePanel();
+    } else {
+      openMobilePanel();
+    }
+  }
+
+  mobileToggleBtn.addEventListener('click', toggleMobilePanel);
+  mobileBackdrop.addEventListener('click', closeMobilePanel);
+
+  // Initialize mobile system label
+  updateMobileSystemLabel();
+
+  // On mobile, start with panel collapsed (CSS handles default transform)
+  // On desktop resize, ensure panel is visible and not stuck in mobile state
+  window.addEventListener('resize', () => {
+    if (!isMobile()) {
+      document.getElementById('controls').classList.remove('mobile-open');
+      mobileBackdrop.classList.remove('visible');
+      document.getElementById('controls').style.display = '';
+    }
+  });
+}
+
+function buildHelpSystemsList() {
+  const container = document.getElementById('help-systems-list');
+  const ul = document.createElement('ul');
+  for (const key of SYSTEM_ORDER) {
+    const sys = SYSTEMS[key];
+    const desc = SYSTEM_DESCRIPTIONS[key];
+    const li = document.createElement('li');
+    li.innerHTML = `<strong style="color:#DDC165;">${sys.name}</strong> &mdash; ${desc.short}`;
+    ul.appendChild(li);
+  }
+  container.appendChild(ul);
+}
+
+function setupHelp() {
+  const overlay = document.getElementById('help-overlay');
+  const helpBtn = document.getElementById('help-btn');
+  const closeBtn = document.getElementById('help-close');
+
+  helpBtn.addEventListener('click', toggleHelp);
+  closeBtn.addEventListener('click', closeHelp);
+
+  // Click outside content to close
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) closeHelp();
+  });
+}
+
+function toggleHelp() {
+  const overlay = document.getElementById('help-overlay');
+  if (overlay.classList.contains('visible')) {
+    closeHelp();
+  } else {
+    openHelp();
+  }
+}
+
+function openHelp() {
+  const overlay = document.getElementById('help-overlay');
+  overlay.style.display = 'block';
+  // Force reflow for transition
+  overlay.offsetHeight;
+  overlay.classList.add('visible', 'fade-in');
+}
+
+function closeHelp() {
+  const overlay = document.getElementById('help-overlay');
+  overlay.classList.remove('fade-in');
+  overlay.style.opacity = '0';
+  setTimeout(() => {
+    overlay.classList.remove('visible');
+    overlay.style.display = 'none';
+    overlay.style.opacity = '';
+  }, 300);
 }
 
 function savePNG() {
